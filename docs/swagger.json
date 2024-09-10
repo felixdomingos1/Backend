@@ -10,12 +10,12 @@
   },
   "servers": [
     {
-      "url": "${BASE_URL}",
-      "description": "Servidor da API para NetSMS"
+      "url": "/api",
+      "description": "Servidor para API do NetSMS"
     }
   ],
   "paths": {
-    "/users/register": {
+    "/usuario/register": {
       "post": {
         "summary": "Cadastro de Usuário",
         "description": "Rota responsável por cadastrar um novo usuário",
@@ -50,7 +50,7 @@
         }
       }
     },
-    "/users/auth": {
+    "/usuario/auth": {
       "post": {
         "summary": "Login de Usuário",
         "description": "Rota para autenticar o usuário e gerar o token JWT",
@@ -215,9 +215,13 @@
             "type": "string",
             "required": true
           },
-          "image": {
+          "role": {
             "type": "string",
-            "format": "binary"
+            "required": true
+          },
+          "balance": {
+            "type": "string",
+            "required":false
           }
         }
       },
@@ -231,6 +235,9 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          },
+          "balance": {
             "type": "string"
           },
           "token": {
