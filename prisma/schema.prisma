@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  password_hash String
+  balance       Float    @default(0.0)
+  role          Role
+  createdAt     DateTime @default(now())
+
+  entities          Entity[]
+  packages          SMSPackage[]
+  contacts          Contact[]
+  groups            ContactGroup[]
+  transfersSent     BalanceTransfer[] @relation("Sender")
+  transfersReceived BalanceTransfer[] @relation("Receiver")
+}
+
+model Entity {
+  id         Int          @id @default(autoincrement())
+  name       String
+  key        String       @default(uuid())
+  smsBalance Int          @default(0)
+  status     EntityStatus
+  userId     Int
+  user       User         @relation(fields: [userId], references: [id])
+
+  smsSends  SMSSend[]
+  createdAt DateTime  @default(now())
+}
+
+model SMSPackage {
+  id          Int           @id @default(autoincrement())
+  name        String
+  pricePerSms Float
+  minSms      Int
+  maxSms      Int
+  status      PackageStatus
+  userId      Int
+  user        User          @relation(fields: [userId], references: [id])
+  createdAt   DateTime      @default(now())
+}
+
+model SMSSend {
+  id             Int           @id @default(autoincrement())
+  message        String
+  entityId       Int
+  entity         Entity        @relation(fields: [entityId], references: [id])
+  groupId        Int?
+  group          ContactGroup? @relation(fields: [groupId], references: [id])
+  specificNumber String?
+  smsQuantity    Int
+  status         SendStatus
+  createdAt      DateTime      @default(now())
+}
+
+model Contact {
+  id          Int     @id @default(autoincrement())
+  name        String
+  phoneNumber String
+  comment     String?
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
+
+  groupContacts GroupContact[]
+  createdAt     DateTime       @default(now())
+}
+
+model ContactGroup {
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+
+  contacts  GroupContact[]
+  smsSends  SMSSend[]
+  createdAt DateTime       @default(now())
+}
+
+model GroupContact {
+  contactId Int
+  contact   Contact      @relation(fields: [contactId], references: [id])
+  groupId   Int
+  group     ContactGroup @relation(fields: [groupId], references: [id])
+
+  @@id([groupId, contactId])
+}
+
+model BalanceTransfer {
+  id         Int      @id @default(autoincrement())
+  amount     Float
+  senderId   Int
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  receiverId Int
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum EntityStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PackageStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SendStatus {
+  SENT
+  FAILED
+}

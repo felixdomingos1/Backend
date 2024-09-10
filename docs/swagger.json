@@ -1,0 +1,344 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API NetSMS",
+    "description": "API para gerenciamento de envios de SMS, entidades, usuários, e mais funcionalidades do NetSMS.",
+    "version": "1.0.0",
+    "contact": {
+      "email": "felixsdomingos93@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "${BASE_URL}",
+      "description": "Servidor da API para NetSMS"
+    }
+  ],
+  "paths": {
+    "/users/register": {
+      "post": {
+        "summary": "Cadastro de Usuário",
+        "description": "Rota responsável por cadastrar um novo usuário",
+        "tags": ["Usuário"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroUsuario"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário cadastrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CadastroUsuarioResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro no cadastro"
+          },
+          "404": {
+            "description": "Rota não encontrada"
+          }
+        }
+      }
+    },
+    "/users/auth": {
+      "post": {
+        "summary": "Login de Usuário",
+        "description": "Rota para autenticar o usuário e gerar o token JWT",
+        "tags": ["Usuário"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Session"
+              },
+              "examples": {
+                "sessao": {
+                  "value": {
+                    "email": "usuario@netsms.com",
+                    "password": "12345678"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem-sucedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Credenciais inválidas"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          }
+        }
+      }
+    },
+    "/entities": {
+      "post": {
+        "summary": "Cadastro de Entidade",
+        "description": "Cadastra uma nova entidade para envio de SMS",
+        "tags": ["Entidades"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entidade cadastrada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro no cadastro da entidade"
+          }
+        }
+      },
+      "get": {
+        "summary": "Listar Entidades",
+        "description": "Recupera todas as entidades cadastradas",
+        "tags": ["Entidades"],
+        "responses": {
+          "200": {
+            "description": "Lista de entidades",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EntityResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contacts": {
+      "post": {
+        "summary": "Adicionar Contato",
+        "description": "Adiciona um novo contato ao sistema",
+        "tags": ["Contatos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Contato adicionado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro ao adicionar contato"
+          }
+        }
+      },
+      "get": {
+        "summary": "Listar Contatos",
+        "description": "Recupera todos os contatos cadastrados",
+        "tags": ["Contatos"],
+        "responses": {
+          "200": {
+            "description": "Lista de contatos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContactResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CadastroUsuario": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": true
+          },
+          "email": {
+            "type": "string",
+            "required": true
+          },
+          "password": {
+            "type": "string",
+            "required": true
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "CadastroUsuarioResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "required": true
+          },
+          "password": {
+            "type": "string",
+            "required": true
+          }
+        }
+      },
+      "EntityRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome da entidade, máximo de 11 caracteres, sem caracteres especiais",
+            "maxLength": 11,
+            "pattern": "^[A-Za-z0-9]+$",
+            "required": true
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "EntityResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "ContactRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": true
+          },
+          "phone": {
+            "type": "string",
+            "required": true
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "ContactResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}
