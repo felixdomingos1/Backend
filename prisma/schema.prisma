@@ -3,123 +3,174 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// 1. Sistema de Autenticação e Usuários
 model User {
-  id            Int      @id @default(autoincrement())
-  name          String
-  email         String   @unique
-  password_hash String
-  balance       Float    @default(0.0)
-  role          Role
-  createdAt     DateTime @default(now())
+  id               Int              @id @default(autoincrement())
+  name             String
+  email            String           @unique
+  password_hash    String
+  role             Role             @default(USER)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  isActive         Boolean          @default(true)
+  lastLogin        DateTime?
+  // Relacionamentos Documentos
+  documentAccesses DocumentAccess[]
+  uploadedDocs     Document[]
 
-  entities          Entity[]
-  packages          SMSPackage[]
-  contacts          Contact[]
-  groups            ContactGroup[]
-  transfersSent     BalanceTransfer[] @relation("Sender")
-  transfersReceived BalanceTransfer[] @relation("Receiver")
-}
+  // Relacionamentos E-commerce
+  orders    Order[]
+  addresses Address[]
+  cartItems CartItem[]
+  reviews   ProductReview[]
 
-model Entity {
-  id         Int          @id @default(autoincrement())
-  name       String
-  key        String       @default(uuid())
-  smsBalance Int          @default(0)
-  status     EntityStatus
-  userId     Int
-  user       User         @relation(fields: [userId], references: [id])
-
-  smsSends  SMSSend[]
-  createdAt DateTime  @default(now())
-}
-
-model SMSPackage {
-  id          Int           @id @default(autoincrement())
-  name        String
-  pricePerSms Float
-  minSms      Int
-  maxSms      Int
-  status      PackageStatus
-  userId      Int
-  user        User          @relation(fields: [userId], references: [id])
-  createdAt   DateTime      @default(now())
-}
-
-model SMSSend {
-  id             Int           @id @default(autoincrement())
-  message        String
-  entityId       Int
-  entity         Entity        @relation(fields: [entityId], references: [id])
-  groupId        Int?
-  group          ContactGroup? @relation(fields: [groupId], references: [id])
-  specificNumber String?
-  smsQuantity    Int
-  status         SendStatus
-  createdAt      DateTime      @default(now())
-}
-
-model Contact {
-  id          Int     @id @default(autoincrement())
-  name        String
-  phoneNumber String
-  comment     String?
-  userId      Int
-  user        User    @relation(fields: [userId], references: [id])
-
-  groupContacts GroupContact[]
-  createdAt     DateTime       @default(now())
-}
-
-model ContactGroup {
-  id     Int    @id @default(autoincrement())
-  name   String
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
-
-  contacts  GroupContact[]
-  smsSends  SMSSend[]
-  createdAt DateTime       @default(now())
-}
-
-model GroupContact {
-  contactId Int
-  contact   Contact      @relation(fields: [contactId], references: [id])
-  groupId   Int
-  group     ContactGroup @relation(fields: [groupId], references: [id])
-
-  @@id([groupId, contactId])
-}
-
-model BalanceTransfer {
-  id         Int      @id @default(autoincrement())
-  amount     Float
-  senderId   Int
-  sender     User     @relation("Sender", fields: [senderId], references: [id])
-  receiverId Int
-  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
-  createdAt  DateTime @default(now())
+  @@map("users")
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
-  CLIENT
+  MANAGER
+  USER
 }
 
-enum EntityStatus {
-  ACTIVE
-  INACTIVE
+// 2. Sistema de Gestão de Documentos
+model Document {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String?
+  fileUrl       String // Link manual do Google Drive
+  fileType      FileType
+  size          String // Ex: "2.5 MB"
+  isActive      Boolean  @default(true)
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        Int // Uploader
+  user          User     @relation(fields: [userId], references: [id])
+
+  // Controle de acesso
+  accesses DocumentAccess[]
 }
 
-enum PackageStatus {
-  ACTIVE
-  INACTIVE
+model DocumentAccess {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  documentId  Int
+  document    Document @relation(fields: [documentId], references: [id])
+  canView     Boolean  @default(true)
+  canDownload Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
-enum SendStatus {
-  SENT
-  FAILED
+enum FileType {
+  PDF
+  EXCEL
+  WORD
+  IMAGE
+  VIDEO
+  OTHER
+}
+
+// 3. Sistema E-commerce
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  stock       Int
+  sku         String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categories ProductCategory[]
+  images     ProductImage[]
+  reviews    ProductReview[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+model ProductCategory {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  url       String
+  isPrimary Boolean @default(false)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model ProductReview {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  total     Float
+  status    OrderStatus @default(PENDING)
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  addressId Int
+  address   Address     @relation(fields: [addressId], references: [id])
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Address {
+  id      Int     @id @default(autoincrement())
+  street  String
+  city    String
+  state   String
+  zipCode String
+  country String
+  userId  Int
+  user    User    @relation(fields: [userId], references: [id])
+  orders  Order[]
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int     @default(1)
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
 }
