@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import documentRoutes from './document-routes';
 import config from '../../../config/env';
 import authRoutes from './auth-routes'
 import adminRoutes from './admin-routes'
@@ -15,8 +16,10 @@ router.get('/', (req, res) => {
         uptime: process.uptime(),
     });
 });
-router.use('/auth', authRoutes)
-router.use('/admin', adminRoutes)
-router.use('/user', userRoutes)
+
+router.use('/documents', documentRoutes);
+router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
+router.use('/user', userRoutes);
 
 export default router;

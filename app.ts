@@ -9,7 +9,12 @@ import requestIp from 'request-ip'
 
 const app = express()
 
-app.use(cors())
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Especifique a origem exata
+  credentials: true, // Permite credenciais (cookies, headers de autenticação)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'] // Headers permitidos
+}));
 app.use(helmet())
 app.use(morgan('combined'))
 app.use(express.json())

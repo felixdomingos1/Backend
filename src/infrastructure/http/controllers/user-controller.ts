@@ -12,9 +12,9 @@ import { PaginationOptions } from '@/types/pagination';
 export const GetAllUsers = async (req: Request, res: Response) => {
   try {
     if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Unauthorized' 
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized'
       });
     }
 
@@ -27,16 +27,16 @@ export const GetAllUsers = async (req: Request, res: Response) => {
     };
 
     const result = await getAllUsers(paginationOptions);
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       success: true,
       data: result.data,
       pagination: result.pagination
     });
   } catch (error) {
     console.error('Get all users error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to get users',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -49,9 +49,9 @@ export const GetUserProfile = async (req: Request, res: Response) => {
     const user = await getUserById(userId);
 
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
@@ -68,9 +68,9 @@ export const UpdateUser = async (req: Request, res: Response) => {
     const updateData = req.body;
 
     if (!req.user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
       });
     }
 
@@ -81,17 +81,18 @@ export const UpdateUser = async (req: Request, res: Response) => {
       updateData
     );
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: 'User updated successfully',
       user: updatedUser
     });
   } catch (error: any) {
     console.error('Update user error:', error);
-    const status = error.message.includes('Unauthorized') ? 403 : 500;
-    res.status(status).json({ 
-      success: false, 
-      message: error.message || 'Failed to update user' 
+    const status = error.message.includes('Unauthorized') ? 403 :
+      error.message.includes('not found') ? 404 : 500;
+    res.status(status).json({
+      success: false,
+      message: error.message || 'Failed to update user'
     });
   }
 };
@@ -101,24 +102,25 @@ export const DeleteUser = async (req: Request, res: Response) => {
     const userId = parseInt(req.params.id);
 
     if (!req.user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
       });
     }
 
     await deleteUser(userId, req.user.role);
-    
-    res.status(200).json({ 
-      success: true, 
-      message: 'User deleted successfully' 
+
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully'
     });
   } catch (error: any) {
     console.error('Delete user error:', error);
-    const status = error.message.includes('Unauthorized') ? 403 : 500;
-    res.status(status).json({ 
-      success: false, 
-      message: error.message || 'Failed to delete user' 
+    const status = error.message.includes('Unauthorized') ? 403 :
+      error.message.includes('not found') ? 404 : 500;
+    res.status(status).json({
+      success: false,
+      message: error.message || 'Failed to delete user'
     });
   }
 };

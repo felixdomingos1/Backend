@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { registerUser, loginUser } from '../../../application/services/auth-service'
+import { registerUser, loginUser, resetPassword, requestPasswordReset } from '../../../application/services/auth-service'
 import { UserRegisterData, UserLoginData } from '../../../types/auth'
 import { prisma } from '../../database/prisma'
 
@@ -62,3 +62,30 @@ export const profile = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: 'Internal server error' })
     }
 }
+
+
+export const requestReset = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const result = await requestPasswordReset(email);
+        res.status(200).json(result);
+    } catch (error: any) {
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Failed to request password reset'
+        });
+    }
+};
+
+export const performReset = async (req: Request, res: Response) => {
+    try {
+        const { token, newPassword } = req.body;
+        const result = await resetPassword(token, newPassword);
+        res.status(200).json(result);
+    } catch (error: any) {
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Failed to reset password'
+        });
+    }
+};

@@ -50,11 +50,44 @@ export const getUserById = async (userId: number) => {
         }
     });
 };
+export const updateUser = async (
+    userId: number,
+    requestingUserId: number,
+    requestingUserRole: string,
+    updateData: UserUpdateData
+) => {
+    const userToUpdate = await prisma.user.findUnique({
+        where: { id: userId }
+    });
 
-export const updateUser = async (userId: number, requestingUserId: number, requestingUserRole: string, updateData: UserUpdateData) => {
-    // Only allow users to update their own profile, unless they're ADMIN
-    if (requestingUserId !== userId && requestingUserRole !== 'ADMIN' && requestingUserRole !== 'SUPER_ADMIN') {
-        throw new Error('Unauthorized to update this user');
+    if (!userToUpdate) {
+        throw new Error('User not found');
+    }
+
+    if (requestingUserRole === 'USER') {
+        if (requestingUserId !== userId) {
+            throw new Error('Unauthorized to update this user');
+        }
+    } else if (requestingUserRole === 'ADMIN') {
+        if (userToUpdate.role === 'SUPER_ADMIN') {
+            throw new Error('Unauthorized to update SUPER_ADMIN');
+        }
+        if (requestingUserId !== userId && userToUpdate.role !== 'USER') {
+            throw new Error('Unauthorized to update this user');
+        }
+    }
+
+    if (updateData.email) {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                email: updateData.email,
+                NOT: { id: userId }
+            }
+        });
+
+        if (existingUser) {
+            throw new Error('Email already in use by another user');
+        }
     }
 
     const data: any = {
@@ -63,7 +96,10 @@ export const updateUser = async (userId: number, requestingUserId: number, reque
     };
 
     if (updateData.password) {
-        data.password_hash = await bcrypt.hash(updateData.password, config.BCRYPT_SALT_ROUNDS);
+        data.password_hash = await bcrypt.hash(
+            updateData.password,
+            config.BCRYPT_SALT_ROUNDS
+        );
     }
 
     return await prisma.user.update({
@@ -79,18 +115,26 @@ export const updateUser = async (userId: number, requestingUserId: number, reque
     });
 };
 
-export const deleteUser = async (userId: number, requestingUserRole: string) => {
-    // Only ADMIN and SUPER_ADMIN can delete users
-    if (requestingUserRole !== 'ADMIN' && requestingUserRole !== 'SUPER_ADMIN') {
+export const deleteUser = async (
+    userId: number,
+    requestingUserRole: string
+) => {
+    // Apenas SUPER_ADMIN pode deletar usuários
+    if (requestingUserRole !== 'SUPER_ADMIN') {
         throw new Error('Unauthorized to delete users');
     }
 
-    // SUPER_ADMIN cannot be deleted
+    // Verificar se o usuário existe
     const userToDelete = await prisma.user.findUnique({
         where: { id: userId }
     });
 
-    if (userToDelete?.role === 'SUPER_ADMIN') {
+    if (!userToDelete) {
+        throw new Error('User not found');
+    }
+
+    // SUPER_ADMIN não pode se deletar
+    if (userToDelete.role === 'SUPER_ADMIN') {
         throw new Error('Cannot delete SUPER_ADMIN');
     }
 

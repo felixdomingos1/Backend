@@ -18,7 +18,8 @@ model User {
   updatedAt        DateTime         @updatedAt
   isActive         Boolean          @default(true)
   lastLogin        DateTime?
-  // Relacionamentos Documentos
+  resetToken       String?          @db.VarChar(255)
+  resetTokenExpiry DateTime?
   documentAccesses DocumentAccess[]
   uploadedDocs     Document[]
 
