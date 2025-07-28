@@ -7,17 +7,17 @@ async function seedSuperAdmin() {
   const hashedPassword = await bcrypt.hash('bianng@2025!', 10);
   
   await prisma.user.upsert({
-    where: { email: 'superadmin@example.com' },
+    where: { email: 'bricebianng@gmail.com'},
     update: {},
     create: {
-      name: 'Super Admin',
-      email: 'superadmin@example.com',
+      name: 'Brice Obiang',
+      email: 'bianng@gmail.com',
       password_hash: hashedPassword,
       role: 'SUPER_ADMIN'
     }
   });
 
-  console.log('Super Admin criado com sucesso!');
+  console.log('Biangg Super Admin criado com sucesso!');
 }
 
 seedSuperAdmin()

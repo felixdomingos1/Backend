@@ -10,10 +10,10 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"],
+      "@infra/*": ["infrastructure/*"],
       "@config/*": ["config/*"],
       "@modules/*": ["modules/*"],
       "@shared/*": ["shared/*"],
-      "@infra/*": ["infrastructure/*"],
       "@types/*": ["types/*"]
     }
   },

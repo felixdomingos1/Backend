@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import config from '../../../config/env';
-
+import authRoutes from './auth-routes'
+import adminRoutes from './admin-routes'
+import userRoutes from './user-routes';
 
 const router = Router();
 router.get('/', (req, res) => {
@@ -13,5 +15,8 @@ router.get('/', (req, res) => {
         uptime: process.uptime(),
     });
 });
- 
+router.use('/auth', authRoutes)
+router.use('/admin', adminRoutes)
+router.use('/user', userRoutes)
+
 export default router;

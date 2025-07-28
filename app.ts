@@ -1,26 +1,39 @@
-import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import router from './src/infrastructure/http/routes';
-import config from './src/config/env';
-const app = express();
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import morgan from 'morgan'
+import config from './src/config/env'
+import { apiLimiter } from './src/infrastructure/http/middlewares/rate-limit'
+import routes from './src/infrastructure/http/routes'
+import requestIp from 'request-ip'
 
-// Middlewares
-app.use(cors());
-app.use(morgan('dev'));
-app.use(express.json());
+const app = express()
 
-// Routes
-app.use('/api/v1', router);
+app.use(cors())
+app.use(helmet())
+app.use(morgan('combined'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-// Error handling
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Internal server error' });
-});
+app.use(apiLimiter)
+app.use(requestIp.mw())
+app.use('/api/v1', routes)
+
+app.use((req, res, next) => {
+  if (req.url === '/favicon.ico') {
+    res.status(204).end()
+  } else {
+    next()
+  }
+})
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack)
+  res.status(500).json({ success: false, message: 'Internal server error' })
+})
 
 app.listen(config.PORT, () => {
-    console.log(`Server running on port ${config.PORT}`);
-});
+  console.log(`Server running on port ${config.PORT} in ${config.NODE_ENV} mode`)
+})
 
-export default app;
+export default app

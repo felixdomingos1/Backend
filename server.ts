@@ -1,39 +1,16 @@
-import express from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
-import morgan from 'morgan'
-import config from './src/config/env'
-import { apiLimiter } from './src/infrastructure/http/middlewares/rate-limit'
-import routes from './src/infrastructure/http/routes'
+import 'module-alias/register';
+import 'tsconfig-paths/register';
+import app from './app';
+import config from './src/config/env';
 
-const app = express()
+const server = app.listen(config.PORT, () => {
+  console.log(`Server running on port ${config.PORT}`);
+});
 
-app.use(cors())
-app.use(helmet())
-app.use(morgan('combined'))
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-
-app.use(apiLimiter)
-
-app.use('/api/v1', routes)
-
-app.use((req, res, next) => {
-  if (req.url === '/favicon.ico') {
-    res.status(204).end()
+server.on('error', (error: NodeJS.ErrnoException) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Port ${config.PORT} is already in use`);
   } else {
-    next()
+    console.error('Server error:', error);
   }
-})
-
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack)
-  res.status(500).json({ success: false, message: 'Internal server error' })
-})
-
-// Start server
-app.listen(config.PORT, () => {
-  console.log(`Server running on port ${config.PORT} in ${config.NODE_ENV} mode`)
-})
-
-export default app
+});
