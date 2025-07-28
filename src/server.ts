@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import 'tsconfig-paths/register';
 import app from './app';
-import config from './src/config/env';
+import config from './config/env';
 
 const server = app.listen(config.PORT, () => {
   console.log(`Server running on port ${config.PORT}`);

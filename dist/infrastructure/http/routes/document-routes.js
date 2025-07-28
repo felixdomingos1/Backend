@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_1 = require("../middlewares/auth");
+const document_controller_1 = require("../controllers/document-controller");
+const router = (0, express_1.Router)();
+router.post('/', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'SUPER_ADMIN']), document_controller_1.uploadDocument);
+router.get('/download/:id', auth_1.authenticate, document_controller_1.downloadDocument);
+router.get('/:id', auth_1.authenticate, document_controller_1.getDocument);
+router.get('/', auth_1.authenticate, document_controller_1.getAllDocuments);
+router.put('/:id', auth_1.authenticate, document_controller_1.updateDocument);
+router.delete('/:id', auth_1.authenticate, document_controller_1.deleteDocument);
+exports.default = router;

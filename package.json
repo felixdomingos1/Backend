@@ -5,9 +5,10 @@
     "main": "dist/server.js",
     "type": "commonjs",
     "scripts": {
-        "dev": "nodemon --exec ts-node server.ts",
-        "build": "tsc",
+        "dev": "nodemon --exec ts-node src/server.ts",
+        "build": "tsc && ls -la dist",
         "start": "node dist/server.js",
+        "render-start": "yarn build && yarn start",
         "prisma:migrate": "prisma migrate dev --name init",
         "prisma:generate": "npx prisma generate --no-engine",
         "seed": "ts-node prisma/seed.ts",
@@ -64,6 +65,7 @@
         "typescript": "^5.8.3"
     },
     "_moduleAliases": {
+        "@": "dist",
         "@infra": "dist/infrastructure",
         "@config": "dist/config",
         "@modules": "dist/modules",

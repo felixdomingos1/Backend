@@ -2,9 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
-import config from './src/config/env'
-import { apiLimiter } from './src/infrastructure/http/middlewares/rate-limit'
-import routes from './src/infrastructure/http/routes'
+import config from './config/env'
+import { apiLimiter } from './infrastructure/http/middlewares/rate-limit'
+import routes from './infrastructure/http/routes'
 import requestIp from 'request-ip'
 
 const app = express()
