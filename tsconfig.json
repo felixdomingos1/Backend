@@ -9,11 +9,12 @@
     "skipLibCheck": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["*"],
       "@config/*": ["config/*"],
       "@modules/*": ["modules/*"],
       "@shared/*": ["shared/*"],
-      "@infra/*": ["infrastructure/*"]
+      "@infra/*": ["infrastructure/*"],
+      "@types/*": ["types/*"]
     }
   },
   "include": ["src/**/*"],
