@@ -9,8 +9,21 @@ import requestIp from 'request-ip'
 
 const app = express()
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://biangg.vercel.app',
+  'https://www.biangg.ca'
+]
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://biangg.vercel.app' || 'https://www.biangg.ca',
+  origin:  function (origin, callback) {
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    } else {
+      return callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
