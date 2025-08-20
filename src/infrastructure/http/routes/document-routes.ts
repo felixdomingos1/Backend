@@ -22,19 +22,16 @@ router.post(
 router.get(
   '/download/:id',
   cors(),
-  authenticate,
   downloadDocument
 );
 
 router.get(
   '/:id',
-  authenticate,
   getDocument
 );
 
 router.get(
   '/',
-  authenticate,
   getAllDocuments
 );
 
