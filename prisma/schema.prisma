@@ -23,12 +23,6 @@ model User {
   documentAccesses DocumentAccess[]
   uploadedDocs     Document[]
 
-  // Relacionamentos E-commerce
-  orders    Order[]
-  addresses Address[]
-  cartItems CartItem[]
-  reviews   ProductReview[]
-
   @@map("users")
 }
 
@@ -54,7 +48,6 @@ model Document {
   userId        Int // Uploader
   user          User     @relation(fields: [userId], references: [id])
 
-  // Controle de acesso
   accesses DocumentAccess[]
 }
 
@@ -78,100 +71,63 @@ enum FileType {
   OTHER
 }
 
-// 3. Sistema E-commerce
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  price       Float
-  stock       Int
-  sku         String   @unique
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  categories ProductCategory[]
-  images     ProductImage[]
-  reviews    ProductReview[]
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-}
-
-model ProductCategory {
-  id       Int       @id @default(autoincrement())
-  name     String
-  slug     String    @unique
-  products Product[]
-}
-
-model ProductImage {
-  id        Int     @id @default(autoincrement())
-  url       String
-  isPrimary Boolean @default(false)
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-}
-
-model ProductReview {
-  id        Int      @id @default(autoincrement())
-  rating    Int
-  comment   String?
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  productId Int
-  product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-model Order {
-  id        Int         @id @default(autoincrement())
-  total     Float
-  status    OrderStatus @default(PENDING)
-  userId    Int
-  user      User        @relation(fields: [userId], references: [id])
-  addressId Int
-  address   Address     @relation(fields: [addressId], references: [id])
-  items     OrderItem[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-}
-
-model OrderItem {
-  id        Int     @id @default(autoincrement())
-  quantity  Int
-  price     Float
-  orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-}
-
-model Address {
-  id      Int     @id @default(autoincrement())
-  street  String
-  city    String
-  state   String
-  zipCode String
-  country String
-  userId  Int
-  user    User    @relation(fields: [userId], references: [id])
-  orders  Order[]
-}
-
-model CartItem {
-  id        Int     @id @default(autoincrement())
-  quantity  Int     @default(1)
-  userId    Int
-  user      User    @relation(fields: [userId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-}
-
-enum OrderStatus {
+// Adicione estas definições aos enums existentes
+enum BookingStatus {
   PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
+  CONFIRMED
   CANCELLED
-  REFUNDED
 }
+
+// Atualize os modelos para terem campos consistentes
+model Booking {
+  id            String        @id @default(uuid())
+  name          String
+  email         String
+  phone         String?
+  preferredDate DateTime
+  message       String?
+  status        BookingStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("bookings")
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+model StudySubscription {
+  id         String   @id @default(uuid())
+  name       String
+  email      String
+  contact    String
+  titleStudy String   @default("Socio-Economic Status & Perinatal Depression")
+  address    String
+  message    String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("study_subscriptions")
+}
+
+model ContactUser {
+  id        String    @id @unique @default(uuid())
+  name      String
+  email     String    @unique
+  phone     String
+  times     String
+  message   String
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+} 

@@ -8,26 +8,29 @@ import routes from './infrastructure/http/routes'
 import requestIp from 'request-ip'
 
 const app = express()
-
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://biangg.vercel.app',
-  'https://www.biangg.ca'
-]
-
+ 
 app.use(cors({
-  origin:  function (origin, callback) {
-    if (!origin) return callback(null, true)
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://biangg.vercel.app',
+      'https://www.biangg.ca'
+    ];
+    
+    if (!origin) return callback(null, true);
+    
     if (allowedOrigins.includes(origin)) {
-      return callback(null, true)
-    } else {
-      return callback(new Error('Not allowed by CORS'))
+      return callback(null, true);
     }
+    
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Disposition'] // Importante para downloads
 }));
+
 app.use(helmet())
 app.use(morgan('combined'))
 app.use(express.json())

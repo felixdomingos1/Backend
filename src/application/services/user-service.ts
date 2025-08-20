@@ -19,7 +19,8 @@ export const getAllUsers = async (paginationOptions?: PaginationOptions): Promis
                 name: true,
                 email: true,
                 role: true,
-                createdAt: true
+                createdAt: true,
+                isActive: true,
             },
             orderBy: {
                 createdAt: 'desc'

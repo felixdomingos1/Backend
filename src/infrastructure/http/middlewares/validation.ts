@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import { validationResult } from 'express-validator'
-import { UserRegisterData } from '../../../types/auth'
 
 export const validateRegisterInput = [
   (req: Request, res: Response, next: NextFunction) => {

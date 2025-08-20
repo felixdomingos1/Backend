@@ -6,6 +6,7 @@ import { prisma } from '../../database/prisma'
 export const register = async (req: Request, res: Response) => {
     try {
         const userData: UserRegisterData = req.body
+        
         const result = await registerUser(userData)
 
         if (!result.success) {

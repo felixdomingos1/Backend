@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import cors from 'cors';
 import { authenticate, authorize } from '../middlewares/auth';
 import { 
   uploadDocument, 
@@ -20,6 +21,7 @@ router.post(
 
 router.get(
   '/download/:id',
+  cors(),
   authenticate,
   downloadDocument
 );

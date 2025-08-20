@@ -11,13 +11,17 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'image/jpeg',
     'image/png',
-    'video/mp4'
+    'image/gif',
+    'video/mp4',
+    'video/quicktime',
+    'text/csv',
+    'application/json'
   ];
   
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type'));
+    cb(new Error('Invalid file type. Only documents, images, and videos are allowed.'));
   }
 };
 
@@ -25,6 +29,6 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB
+    fileSize: 100 * 1024 * 1024 // 100MB
   }
 });
